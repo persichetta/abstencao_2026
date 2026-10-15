@@ -2,7 +2,7 @@
 
 mapa interativo da abstenção e dos votos no lula no 1º turno de 4/10/2026, com estas camadas:
 
-- **sobreposição** (visão padrão): três camadas no mesmo lugar. a cor cruza abstenção e voto no lula (3×3, faixas pelos tercis dos municípios: abstenção <19%, 19–22%, ≥22%; lula <36%, 36–60%, ≥60%). a distância do local de votação aparece como hachura nos municípios (parcela dos eleitores que votam em local de distância média ou alta: 20–50% ou mais de 50%) e como tamanho dos pontos dos locais de votação nos estados. zonas e locais vêm ordenados com abstenção alta + lula alto primeiro, depois os mais distantes;
+- **sobreposição** (visão padrão): três camadas no mesmo lugar. a cor cruza abstenção e voto no lula (3×3, faixas pelos tercis dos municípios: abstenção <19%, 19–22%, ≥22%; lula <36%, 36–60%, ≥60%). a terceira camada é a distância entre as áreas habitadas e as seções: para cada setor censitário do censo 2022, a distância em linha reta até o local de votação mais próximo do mesmo município. no brasil, hachura nos municípios com 20–40% ou 40%+ dos setores a 5 km ou mais da seção; nos estados, pontos cinza para setores a 2 km ou mais e tamanho do local de votação pela distância média da região que ele atende;
 
 - **município**: choropleth do brasil inteiro, alternando entre abstenção e % dos votos válidos no lula;
 - **zona eleitoral**: abstenção e votos no lula de cada zona nos painéis;
@@ -40,7 +40,9 @@ abstenção = abstenções ÷ eleitores aptos. votos no lula = votos nominais do
 
 um json por uf com a lista de locais de votação. cada item é:
 
-`[lat, lon, nome_local, municipio, zona, bairro, [[secao, aptos, abstencoes, votos_lula, votos_validos], ...], tipo_area, km_ate_sede, distancia]`
+`[lat, lon, nome_local, municipio, zona, bairro, [[secao, aptos, abstencoes, votos_lula, votos_validos], ...], tipo_area, km_ate_sede, distancia_antiga, [setores_atendidos, km_medio, km_maximo]]`
+
+`far/*.json`: setores censitários a 2 km ou mais da seção mais próxima, `[lat, lon, km]`.
 
 `distancia`: 0 baixa · 1 média · 2 alta. alta = setor rural disperso, indígena ou quilombola, ou fora da área urbana adensada a 25 km+ da sede; média = povoado, núcleo urbano, urbana de baixa densidade, ou 8–25 km da sede; baixa = o restante.
 
@@ -49,7 +51,7 @@ códigos de `tipo_area`: 0 centro · 1 favela e comunidade urbana · 2 urbana al
 ## limitações
 
 - a estimativa de eleitores do lula entre os ausentes supõe que quem faltou votaria como quem compareceu na mesma seção;
-- a distância é em linha reta do local de votação até a sede do município, um indicador aproximado: o eleitor mora em algum ponto ao redor do local, e o dado não diz onde;
+- a distância da região até a seção é em linha reta, do ponto interno de cada setor censitário até o local de votação mais próximo do mesmo município; pela estrada ou pelo rio costuma ser mais, e o eleitor nem sempre vota no local mais próximo de casa;
 - 2.648 seções (0,5%) não casaram com a votação por candidato por diferença de grafia no nome do município e entram com zero voto no lula;
 - pela lei 6.091/1974, candidatos e partidos não podem fornecer transporte a eleitores no dia da eleição.
 
@@ -63,4 +65,4 @@ códigos de `tipo_area`: 0 centro · 1 favela e comunidade urbana · 2 urbana al
 
 ## scripts
 
-`scripts/` tem o processamento em python (pandas + geopandas), na ordem `prep.py` → `secao.py` → `area.py` → `lula.py` → `vitoria.py` → `secao_lula.py` → `prioridade.py` → `remoto.py`. eles recebem como argumento a pasta de trabalho com os arquivos brutos do tse e do ibge, e os caminhos dos gpkg de setores em `area.py` precisam ser ajustados pro seu ambiente.
+`scripts/` tem o processamento em python (pandas + geopandas), na ordem `prep.py` → `secao.py` → `area.py` → `lula.py` → `vitoria.py` → `secao_lula.py` → `prioridade.py` → `remoto.py` → `regiao.py`. eles recebem como argumento a pasta de trabalho com os arquivos brutos do tse e do ibge, e os caminhos dos gpkg de setores em `area.py` precisam ser ajustados pro seu ambiente.
