@@ -2,7 +2,7 @@
 
 mapa interativo da abstenção e dos votos no lula no 1º turno de 4/10/2026, com estas camadas:
 
-- **prioridade de transporte** (visão padrão): cruza votos no lula, abstenção e distância do local de votação. para cada local, estima quantos eleitores do lula estavam entre os ausentes (abstenções × fatia do lula nos válidos, seção por seção) e classifica a distância em baixa, média ou alta. filtros por nível de distância e % do lula no local;
+- **sobreposição** (visão padrão): três camadas no mesmo lugar. a cor cruza abstenção e voto no lula (3×3, faixas pelos tercis dos municípios: abstenção <19%, 19–22%, ≥22%; lula <36%, 36–60%, ≥60%). a distância do local de votação aparece como hachura nos municípios (parcela dos eleitores que votam em local de distância média ou alta: 20–50% ou mais de 50%) e como tamanho dos pontos dos locais de votação nos estados. zonas e locais vêm ordenados com abstenção alta + lula alto primeiro, depois os mais distantes;
 
 - **município**: choropleth do brasil inteiro, alternando entre abstenção e % dos votos válidos no lula;
 - **zona eleitoral**: abstenção e votos no lula de cada zona nos painéis;
@@ -63,4 +63,4 @@ códigos de `tipo_area`: 0 centro · 1 favela e comunidade urbana · 2 urbana al
 
 ## scripts
 
-`scripts/` tem o processamento em python (pandas + geopandas), na ordem `prep.py` → `secao.py` → `area.py` → `lula.py` → `vitoria.py` → `secao_lula.py` → `prioridade.py`. eles recebem como argumento a pasta de trabalho com os arquivos brutos do tse e do ibge, e os caminhos dos gpkg de setores em `area.py` precisam ser ajustados pro seu ambiente.
+`scripts/` tem o processamento em python (pandas + geopandas), na ordem `prep.py` → `secao.py` → `area.py` → `lula.py` → `vitoria.py` → `secao_lula.py` → `prioridade.py` → `remoto.py`. eles recebem como argumento a pasta de trabalho com os arquivos brutos do tse e do ibge, e os caminhos dos gpkg de setores em `area.py` precisam ser ajustados pro seu ambiente.
