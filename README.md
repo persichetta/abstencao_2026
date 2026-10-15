@@ -4,6 +4,7 @@ mapa interativo da abstenção e dos votos no lula no 1º turno de 4/10/2026, co
 
 - **município**: choropleth do brasil inteiro, alternando entre abstenção e % dos votos válidos no lula;
 - **zona eleitoral**: abstenção e votos no lula de cada zona nos painéis;
+- **abstenção onde lula venceu**: abstenção só nos municípios (mapa) e zonas (tabelas) onde lula foi o candidato mais votado no 1º turno;
 - **local de votação**: pontos por estado, com a abstenção de cada seção;
 - **tipo de área**: setor censitário do censo 2022 em que cada local de votação cai.
 
@@ -51,4 +52,4 @@ códigos de `tipo_area`: 0 centro · 1 favela e comunidade urbana · 2 urbana al
 
 ## scripts
 
-`scripts/` tem o processamento em python (pandas + geopandas), na ordem `prep.py` → `secao.py` → `area.py` → `lula.py`. eles recebem como argumento a pasta de trabalho com os arquivos brutos do tse e do ibge, e os caminhos dos gpkg de setores em `area.py` precisam ser ajustados pro seu ambiente.
+`scripts/` tem o processamento em python (pandas + geopandas), na ordem `prep.py` → `secao.py` → `area.py` → `lula.py` → `vitoria.py`. eles recebem como argumento a pasta de trabalho com os arquivos brutos do tse e do ibge, e os caminhos dos gpkg de setores em `area.py` precisam ser ajustados pro seu ambiente.
