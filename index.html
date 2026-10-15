@@ -72,6 +72,11 @@ path.uf{fill:none;stroke:var(--fg);stroke-opacity:.45;stroke-width:.7;vector-eff
 .legend .ticks span{width:30px;text-align:right;transform:translateX(50%)}
 .tip{position:absolute;pointer-events:none;background:var(--surface);color:var(--fg);border:1px solid var(--line);border-radius:6px;padding:6px 9px;font-size:.8rem;box-shadow:0 4px 14px rgba(0,0,0,.12);white-space:nowrap}
 .tip b{font-weight:600}
+.tipd{white-space:normal;width:320px;max-width:70vw;margin-top:6px;padding-top:6px;border-top:1px solid var(--line);display:grid;gap:4px}
+.tipt{font-size:.7rem;color:var(--muted)}
+.tipr{display:grid;grid-template-columns:9px 1fr auto;gap:6px;align-items:start;font-size:.75rem;line-height:1.3}
+.tipr i{width:9px;height:9px;border-radius:50%;margin-top:3px}
+.tipr .n{font-weight:600;padding-left:6px}
 .tip .n{font-family:var(--f-num)}
 aside{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:14px 16px;display:grid;gap:12px;min-width:0}
 aside h2{font-size:1.05rem;margin:0;text-wrap:balance}
@@ -201,9 +206,14 @@ const paths=g.selectAll("path.m").data(feats).join("path").attr("class","m").att
   .attr("fill",d=>{const m=M[d.properties.id];return m?munFill(m):"var(--nodata)"})
   .on("mousemove",(e,d)=>{const m=M[d.properties.id];const r=box.getBoundingClientRect();
     tip.hidden=false;
-    tip.innerHTML=m?`<b>${m.n}</b> · ${m.uf} · ${m.z.length} zona${m.z.length>1?"s":""}<br><span class="n">${pct(m.b/m.a)}</span> de abstenção<br><span class="n">${m.v?pct(m.l/m.v):"–"}</span> dos válidos no Lula<br>${m.w?"Lula foi o mais votado":"Lula não foi o mais votado"}${MET==="pri"?`<br><span class="n">${kfmt(munE(m))}</span> eleitores do Lula estimados entre os ausentes (filtro de distância)`:""}`:`<b>${d.properties.name}</b><br>sem dados`;
+    tip.innerHTML=m?`<b>${m.n}</b> · ${m.uf} · ${m.z.length} zona${m.z.length>1?"s":""}<br><span class="n">${pct(m.b/m.a)}</span> de abstenção<br><span class="n">${m.v?pct(m.l/m.v):"–"}</span> dos válidos no Lula<br>${m.w?"Lula foi o mais votado":"Lula não foi o mais votado"}<div class="tipd"><div class="tipt">Eleitores do Lula estimados entre os ausentes, por distância do local de votação</div>
+      <div class="tipr"><i style="background:${remCol(2)}"></i><span><b>Alta</b> · zona rural dispersa, aldeia indígena, quilombo, ou fora da cidade a 25 km ou mais da sede</span><span class="n">${kfmt(m.e[2])}</span></div>
+      <div class="tipr"><i style="background:${remCol(1)}"></i><span><b>Média</b> · povoados, núcleos urbanos isolados, bairros pouco adensados, ou 8 a 25 km da sede</span><span class="n">${kfmt(m.e[1])}</span></div>
+      <div class="tipr"><i style="background:${remCol(0)}"></i><span><b>Baixa</b> · o resto</span><span class="n">${kfmt(m.e[0])}</span></div></div>`:`<b>${d.properties.name}</b><br>sem dados`;
     let x=e.clientX-r.left+14,y=e.clientY-r.top+14;
     if(x+tip.offsetWidth>r.width-8)x=e.clientX-r.left-tip.offsetWidth-14;
+    if(y+tip.offsetHeight>r.height-8)y=Math.max(8,e.clientY-r.top-tip.offsetHeight-14);
+    x=Math.max(8,x);
     tip.style.left=x+"px";tip.style.top=y+"px";})
   .on("mouseleave",()=>tip.hidden=true)
   .on("click",(e,d)=>{if(M[d.properties.id])showMun(d.properties.id,true)});
