@@ -62,7 +62,7 @@ circle.lv:hover,circle.lsel{stroke:var(--hover);stroke-width:1.6}
 .seg{flex-wrap:wrap}
 .seg button{border:0;border-radius:0;padding:6px 10px}
 .seg button[aria-pressed="true"]{background:var(--accent);color:#fff}
-.biv{display:grid;grid-template-columns:auto repeat(3,22px);gap:2px;align-items:center;font-size:.65rem;color:var(--muted)}
+.biv{display:inline-grid;grid-template-columns:auto repeat(3,26px);gap:2px;align-items:center;font-size:.65rem;color:var(--muted)}
 .biv i{height:14px;display:block}
 .biv .xl{text-align:center;font-size:.6rem;line-height:1.1}
 path.hatch{pointer-events:none;stroke:none}
@@ -102,6 +102,38 @@ aside h2{font-size:1.05rem;margin:0;text-wrap:balance}
 .scroll{max-height:420px;overflow:auto}
 .note{font-size:.75rem;color:var(--muted);max-width:110ch;margin:0}
 .note a{color:var(--accent)}
+.zbtn{position:absolute;right:10px;top:10px;display:flex;flex-direction:column;gap:4px;z-index:2}
+.zbtn button{width:34px;height:34px;padding:0;font-size:1.1rem;line-height:1;background:var(--surface)}
+.tiphint{display:none}
+#tomap{position:fixed;right:max(16px,env(safe-area-inset-right,0px));bottom:calc(16px + env(safe-area-inset-bottom,0px));background:var(--accent);color:#fff;border:0;border-radius:999px;padding:10px 16px;font-weight:600;box-shadow:0 4px 14px rgba(0,0,0,.2);z-index:5}
+.show-sm{display:none}
+@media (max-width:640px){.hide-sm{display:none}.show-sm{display:inline}}
+@media (max-width:640px){
+  body{padding-block:12px 20px}
+  h1{font-size:1.3rem}
+  .sub{font-size:.85rem}
+  header{gap:10px}
+  .kpis{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px 12px;width:100%}
+  .kpi .l{font-size:.6rem}
+  .kpi .v{font-size:.95rem}
+  .tools{padding:8px}
+  .seg{flex-wrap:nowrap;overflow-x:auto;width:100%;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+  .seg::-webkit-scrollbar{display:none}
+  .seg button{white-space:nowrap;flex:0 0 auto}
+  input#q{flex:1 1 100px}
+  .filters label{width:100%;justify-content:space-between}
+  .filters select{flex:1;max-width:60%}
+  .layer{margin-left:0;font-size:.7rem}
+  svg#map{max-height:none}
+  .legend{position:static;margin:0 8px 8px;border-radius:6px}
+  aside{padding:12px}
+  .big{font-size:1.6rem}
+}
+@media (hover:none){
+  .tip{position:static;box-shadow:none;border-width:1px 0 0;border-radius:0;white-space:normal;padding:10px 12px;font-size:.85rem}
+  .tipd{width:auto;max-width:none}
+  .tiphint{display:block;margin-top:6px;font-size:.75rem;color:var(--accent)}
+}
 </style>
 </head>
 <body>
@@ -111,7 +143,7 @@ aside h2{font-size:1.05rem;margin:0;text-wrap:balance}
   <header>
     <div>
       <h1>Onde levar o eleitor do Lula à urna</h1>
-      <p class="sub">Sobreposição de três camadas do 1º turno (4 de outubro), em cada lugar: abstenção, voto no Lula e distância do local de votação. A cor cruza abstenção e voto no Lula; a textura dos municípios, os pontos cinza e o tamanho dos locais de votação mostram quão longe as áreas habitadas estão das seções eleitorais. Escolha um estado para ver zonas e locais de votação.</p>
+      <p class="sub"><span class="hide-sm">Sobreposição de três camadas do 1º turno (4 de outubro), em cada lugar: abstenção, voto no Lula e distância do local de votação. A cor cruza abstenção e voto no Lula; a textura dos municípios, os pontos cinza e o tamanho dos locais de votação mostram quão longe as áreas habitadas estão das seções eleitorais. <span> Escolha um estado para ver zonas e locais de votação.</span></span><span class="show-sm">Abstenção, voto no Lula e distância das áreas habitadas até a seção eleitoral, no 1º turno (4/10). Toque num município ou local para ver os números.</span></p>
     </div>
     <div class="kpis" id="kpis"></div>
   </header>
@@ -132,11 +164,13 @@ aside h2{font-size:1.05rem;margin:0;text-wrap:balance}
         <select id="colorby" aria-label="Cor dos pontos" hidden><option value="abst">Cor: abstenção</option><option value="area">Cor: tipo de área</option></select>
         <span class="layer" id="layer">Escolha um estado para ver os locais de votação</span>
       </div>
-      <svg id="map" role="img" aria-label="Mapa do Brasil por município colorido pela taxa de abstenção"></svg>
-      <div class="legend" id="legend"></div>
+      <div class="mapwrap" style="position:relative"><svg id="map" role="img" aria-label="Mapa do Brasil por município colorido pela taxa de abstenção"></svg>
+      <div class="zbtn"><button type="button" id="zin" aria-label="Aproximar">+</button><button type="button" id="zout" aria-label="Afastar">−</button></div></div>
       <div class="tip" id="tip" hidden></div>
+      <div class="legend" id="legend"></div>
     </div>
     <aside id="panel"></aside>
+  <button type="button" id="tomap" hidden>↑ Mapa</button>
   </div>
   <p class="note" id="note"></p>
 </div>
@@ -201,8 +235,8 @@ document.getElementById("kpis").innerHTML=[
 // legenda
 const lg=document.getElementById("legend");let LEG0;
 function legHTML(){if(MET==="pri"){
-   const cells=[2,1,0].map(a=>`<span>${a===2?"≥22%":a===1?"19–22%":"<19%"}</span>${[0,1,2].map(l=>`<i style="background:var(--b${a}${l})"></i>`).join("")}`).join("");
-   const grid=`<div class="t">Abstenção × voto no Lula</div><div class="biv">${cells}<span></span><span class="xl">&lt;36%</span><span class="xl">36–60%</span><span class="xl">≥60%</span></div><div style="font-size:.65rem;color:var(--muted);margin-top:2px">linhas: abstenção · colunas: Lula (% válidos)</div>`;
+   const cells=[2,1,0].map(a=>`<span>${a===2?"≥22":a===1?"19–22":"<19"}</span>${[0,1,2].map(l=>`<i style="background:var(--b${a}${l})"></i>`).join("")}`).join("");
+   const grid=`<div class="t">Abstenção × voto no Lula</div><div class="biv">${cells}<span></span><span class="xl">&lt;36</span><span class="xl">36–60</span><span class="xl">≥60</span></div><div style="font-size:.65rem;color:var(--muted);margin-top:2px">linhas: abstenção (%) · colunas: Lula (% dos válidos)</div>`;
    const dist=loaded?`<div class="t" style="margin-top:8px">Distância da região até a seção</div><div style="font-size:.65rem;color:var(--muted)">pontos cinza: áreas habitadas (setores censitários) longe da seção mais próxima</div>${[1,2,3].map(i=>`<div class="lgrow"><svg width="16" height="12"><circle cx="8" cy="6" r="2.5" fill="${bandCol(i)}"/></svg>${BANDN[i]}</div>`).join("")}<div style="font-size:.65rem;color:var(--muted);margin-top:4px">tamanho do local: distância média da região que ele atende (até 2 km, 2 a 5 km, 5 km ou mais)</div>`
      :`<div class="t" style="margin-top:8px">Distância da região até a seção (textura)</div><div style="font-size:.65rem;color:var(--muted)">área habitada a 5 km ou mais da seção mais próxima</div>${[1,2].map(i=>`<div class="lgrow"><svg width="16" height="12"><rect width="16" height="12" fill="var(--b11)"/><rect width="16" height="12" fill="url(#h${i})"/></svg>${i===1?"20% a 40%":"40% ou mais"}</div>`).join("")}`;
    return grid+dist}
@@ -231,7 +265,7 @@ const paths=g.selectAll("path.m").data(feats).join("path").attr("class","m").att
   .attr("fill",d=>{const m=M[d.properties.id];return m?munFill(m):"var(--nodata)"})
   .on("mousemove",(e,d)=>{const m=M[d.properties.id];const r=box.getBoundingClientRect();
     tip.hidden=false;
-    tip.innerHTML=m?`<b>${m.n}</b> · ${m.uf} · ${m.z.length} zona${m.z.length>1?"s":""}<br><span class="n">${pct(m.b/m.a)}</span> de abstenção<br><span class="n">${m.v?pct(m.l/m.v):"–"}</span> dos válidos no Lula<br>${m.w?"Lula foi o mais votado":"Lula não foi o mais votado"}${m.v?`<br>${quadTxt(m.b/m.a,m.l/m.v)}`:""}<div class="tipd"><div class="tipt">Áreas habitadas (setores censitários) por distância até a seção eleitoral mais próxima</div>
+    tip.innerHTML=m?`<b>${m.n}</b> · ${m.uf} · ${m.z.length} zona${m.z.length>1?"s":""}<br><span class="n">${pct(m.b/m.a)}</span> de abstenção<br><span class="n">${m.v?pct(m.l/m.v):"–"}</span> dos válidos no Lula<br>${m.w?"Lula foi o mais votado":"Lula não foi o mais votado"}${m.v?`<br>${quadTxt(m.b/m.a,m.l/m.v)}`:""}<div class="tiphint">Detalhes no painel abaixo do mapa ↓</div><div class="tipd"><div class="tipt">Áreas habitadas (setores censitários) por distância até a seção eleitoral mais próxima</div>
       ${[3,2,1,0].map(i=>`<div class="tipr"><i style="background:${bandCol(i)}"></i><span>${BANDN[i]}</span><span class="n">${pct(m.sd[i]/raTot(m.sd))}</span></div>`).join("")}</div>`:`<b>${d.properties.name}</b><br>sem dados`;
     let x=e.clientX-r.left+14,y=e.clientY-r.top+14;
     if(x+tip.offsetWidth>r.width-8)x=e.clientX-r.left-tip.offsetWidth-14;
@@ -239,7 +273,7 @@ const paths=g.selectAll("path.m").data(feats).join("path").attr("class","m").att
     x=Math.max(8,x);
     tip.style.left=x+"px";tip.style.top=y+"px";})
   .on("mouseleave",()=>tip.hidden=true)
-  .on("click",(e,d)=>{if(M[d.properties.id])showMun(d.properties.id,true)});
+  .on("click",(e,d)=>{if(M[d.properties.id]){showMun(d.properties.id,true);focusPanel()}});
 // contorno das UFs
 const ufGeo={};
 for(const geom of TOPO.objects[objName].geometries){const u=String(geom.properties.id).slice(0,2);(ufGeo[u] ||= []).push(geom)}
@@ -259,7 +293,12 @@ let curK=1;
 const rad=d=>(MET==="pri"?[1.7,3.3,5.6][d.rl]:Math.max(1.6,Math.sqrt(d.a)/9))/Math.pow(curK,.8)*1.2;
 const passes=d=>d.rl>=REM()&&(!HOT()||isHot(d.r,d.lr));
 const zoom=d3.zoom().scaleExtent([1,400]).on("zoom",e=>{g.attr("transform",e.transform);gp.attr("transform",e.transform);gfar.attr("transform",e.transform);curK=e.transform.k;gfar.selectAll("circle").attr("r",farR);gp.selectAll("circle").attr("r",rad)});
-svg.call(zoom);
+zoom.filter(e=>e.type==="touchstart"?e.touches.length>1:(!e.ctrlKey||e.type==="wheel")&&!e.button);
+svg.call(zoom).on("dblclick.zoom",null);
+const touchUI=window.matchMedia&&matchMedia("(hover: none)").matches;
+svg.style("touch-action","pan-y");
+document.getElementById("zin").onclick=()=>svg.transition().duration(300).call(zoom.scaleBy,1.8);
+document.getElementById("zout").onclick=()=>svg.transition().duration(300).call(zoom.scaleBy,1/1.8);
 function zoomPt(d,k=40){svg.transition().duration(650).call(zoom.transform,d3.zoomIdentity.translate(W/2,H/2).scale(k).translate(-d.xy[0],-d.xy[1]))}
 function zoomTo(fc,pad=.85){const [[x0,y0],[x1,y1]]=path.bounds(fc);
   const k=Math.min(400,pad/Math.max((x1-x0)/W,(y1-y0)/H));
@@ -310,7 +349,7 @@ async function loadUF(uf){
       tip.innerHTML=`<b>${d.nome}</b><br>${d.mun} · zona ${d.z} · ${catName(d.cat)}<br>${regTxt(d)}<br><span class="n">${pct(d.r)}</span> de abstenção · <span class="n">${d.v?pct(d.lr):"–"}</span> no Lula<br>${quadTxt(d.r,d.lr)}`;
       let x=e.clientX-r.left+14,y=e.clientY-r.top+14;if(x+tip.offsetWidth>r.width-8)x=e.clientX-r.left-tip.offsetWidth-14;tip.style.left=x+"px";tip.style.top=y+"px"})
     .on("mouseleave",()=>tip.hidden=true)
-    .on("click",(e,d)=>{e.stopPropagation();showLocal(d)});
+    .on("click",(e,d)=>{e.stopPropagation();showLocal(d);focusPanel()});
   applyPts();legendMode();lg.innerHTML=MET==="pri"?legHTML():lg.innerHTML;
   if(MET==="pri"&&ufSel.value&&UFCODE[ufSel.value]===uf&&!(selected&&M[selected]))showUF(uf);
   if(document.getElementById("ufarea")&&ufSel.value&&UFCODE[ufSel.value]===uf)document.getElementById("ufarea").innerHTML=`<div class="eyebrow">Abstenção por tipo de área</div>${areaTable(areaAgg(LV))}`;
@@ -435,6 +474,11 @@ function fillMunLV(m){const el=document.getElementById("munlv");if(!el)return;
   el.innerHTML=`<div class="eyebrow">Abstenção por tipo de área</div>${areaTable(areaAgg(list))}<div class="eyebrow" style="margin-top:12px">${list.length} locais de votação, maior abstenção primeiro</div>
   <div class="scroll" style="max-height:260px"><table class="tbl"><tbody>${list.map(d=>`<tr class="click" data-i="${d.i}"><td>${d.nome}<div class="delta">zona ${d.z} · ${catName(d.cat)}</div></td><td class="num">${int(d.a)}</td><td class="num">${pct(d.r)}</td></tr>`).join("")}</tbody></table></div>`;
   el.querySelectorAll("tr[data-i]").forEach(tr=>tr.onclick=()=>{const d=LV[+tr.dataset.i];if(d.xy)zoomPt(d);showLocal(d)});}
+const mapbox=document.querySelector(".mapbox"), toMap=document.getElementById("tomap");
+const narrow=()=>window.innerWidth<=900;
+function focusPanel(){if(narrow())setTimeout(()=>panel.scrollIntoView({behavior:"smooth",block:"start"}),350)}
+toMap.onclick=()=>mapbox.scrollIntoView({behavior:"smooth",block:"start"});
+if("IntersectionObserver" in window)new IntersectionObserver(([en])=>{toMap.hidden=!narrow()||en.isIntersecting},{threshold:.05}).observe(mapbox);
 updateHatch();
 showBR();
 
