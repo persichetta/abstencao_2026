@@ -31,6 +31,7 @@ html,body{overflow-x:clip}
 body{background:var(--bg);color:var(--fg);font-family:var(--f-ui);font-size:15px;line-height:1.45;
   padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:16px 32px}
 .wrap{max-width:980px;margin:0 auto;display:grid;gap:14px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
 h1{font-size:1.6rem;font-weight:800;color:var(--accent);margin:0;letter-spacing:-.01em;text-wrap:balance}
 .lead{margin:.2rem 0 0;color:var(--muted);max-width:62ch}
 .lead b{color:var(--fg)}
@@ -77,6 +78,9 @@ circle.lv.on{stroke:var(--accent);stroke-width:2.4}
 .row .sub{font-size:.82rem;color:var(--muted);grid-column:1}
 .row .pc{font-family:var(--f-num);font-weight:500;color:var(--accent);grid-row:1/3;grid-column:2;text-align:right}
 .row .pc small{display:block;font-family:var(--f-ui);font-size:.7rem;color:var(--muted);font-weight:400}
+.save{font:inherit;font-size:.9rem;display:inline-flex;align-items:center;gap:6px;padding:8px 12px;border-radius:999px;border:1.5px solid var(--line);background:var(--surface);cursor:pointer;width:max-content}
+.save[aria-pressed="true"]{border-color:var(--accent);color:var(--accent);font-weight:600}
+.save svg{width:18px;height:18px}
 .more{font:inherit;padding:12px;border:1px solid var(--line);border-radius:10px;background:var(--surface);cursor:pointer}
 details{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 16px}
 details summary{cursor:pointer;font-weight:600}
@@ -89,13 +93,18 @@ details select{font:inherit;padding:8px;border-radius:8px;border:1px solid var(-
 </style>
 </head>
 <body>
+
+
 <style>
 .bl-top{background:#C3090A;color:#fff;margin-inline:calc(-1 * max(16px, env(safe-area-inset-left, 0px)));margin-top:-16px;margin-bottom:16px;padding-top:env(safe-area-inset-top,0px)}
 .bl-in{max-width:1100px;margin:0 auto;display:flex;align-items:stretch;gap:28px;padding:0 max(24px, env(safe-area-inset-left, 0px));min-height:76px;font-family:"Montserrat","Public Sans",system-ui,sans-serif}
-.bl-logo{display:flex;flex-direction:column;justify-content:center;color:#fff;text-decoration:none;font-weight:900;font-size:1.45rem;line-height:.86;letter-spacing:.01em;text-transform:uppercase;flex:0 0 auto}
-.bl-logo span{display:block}
-.bl-logo .a{position:relative;display:inline-block}
-.bl-logo .a::after{content:"★";position:absolute;left:50%;bottom:-.02em;transform:translateX(-50%);color:#C3090A;font-size:.5em;line-height:1}
+.sm-only{display:none}
+@media (max-width:640px){.lg-only{display:none}.sm-only{display:inline}}
+.app-logo{display:flex;flex-direction:column;justify-content:center;color:#fff;text-decoration:none;font-weight:900;font-size:1.25rem;line-height:.9;text-transform:uppercase;flex:0 0 auto;letter-spacing:.01em}
+.app-logo span:last-child{font-size:.62em;letter-spacing:.06em}
+.app-logo.bl span:last-child{font-size:1em;letter-spacing:.01em}
+.bl-top{position:sticky;top:0;z-index:20}
+html{scroll-padding-top:84px}
 .bl-nav{display:flex;align-items:stretch;gap:8px;overflow-x:auto;scrollbar-width:none}
 .bl-nav::-webkit-scrollbar{display:none}
 .bl-nav a{display:flex;align-items:center;gap:8px;padding:0 14px;color:#fff;text-decoration:none;font-weight:700;font-size:1rem;white-space:nowrap;border-bottom:4px solid transparent;border-top:4px solid transparent}
@@ -105,29 +114,28 @@ details select{font:inherit;padding:8px;border-radius:8px;border:1px solid var(-
 .bl-nav svg{width:22px;height:22px;flex:0 0 auto}
 @media (max-width:640px){
   .bl-in{gap:10px;padding:0 12px;min-height:64px}
-  .bl-logo{font-size:1.05rem}
   .bl-nav{gap:0;flex:1;justify-content:space-between}
+  .app-logo{display:none}
   .bl-nav a{flex-direction:column;justify-content:center;gap:2px;padding:0 6px;font-size:.68rem}
   .bl-nav svg{width:20px;height:20px}
 }
 </style>
 <header class="bl-top">
   <div class="bl-in">
-    <a class="bl-logo" href="https://boralula.org/" aria-label="Bora Lula, página inicial"><span>Bora</span><span>Lul<span class="a">A</span></span></a>
-    <nav class="bl-nav" aria-label="Navegação principal">
-      <a href="https://boralula.org/"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V20a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1V9.5"/></svg>Início</a>
-      <a href="https://boralula.org/"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 4 3 6.5v13.5l6-2.5 6 2.5 6-2.5V4l-6 2.5z"/><path d="M9 4v13.5M15 6.5V20"/></svg>Mapa</a>
-      <a href="https://boralula.org/"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20s-7-4.4-9.2-8.6C1.4 8.6 3 5 6.5 5c2 0 3.5 1.2 5.5 3.3C14 6.2 15.5 5 17.5 5 21 5 22.6 8.6 21.2 11.4 19 15.6 12 20 12 20z"/></svg>Salvos</a>
-      <a href="./" aria-current="page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3v18h18"/><path d="M8 17v-5M12.5 17V8M17 17v-8"/></svg>Painel</a>
+    <a class="app-logo bl" href="#top" aria-label="Bora Lula · Longe da urna"><span>Bora</span><span>Lula</span></a>
+    <nav class="bl-nav" aria-label="Seções do app">
+      <a href="#top" data-sec="top" aria-current="page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V20a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1V9.5"/></svg>Início</a>
+      <a href="#sec-mapa" data-sec="sec-mapa"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 4 3 6.5v13.5l6-2.5 6 2.5 6-2.5V4l-6 2.5z"/><path d="M9 4v13.5M15 6.5V20"/></svg>Mapa</a>
+      <a href="#sec-lista" data-sec="sec-lista"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 6h13M8 12h13M8 18h13"/><circle cx="3.5" cy="6" r="1"/><circle cx="3.5" cy="12" r="1"/><circle cx="3.5" cy="18" r="1"/></svg>Onde agir</a>
+      <a href="#sec-salvos" data-sec="sec-salvos"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20s-7-4.4-9.2-8.6C1.4 8.6 3 5 6.5 5c2 0 3.5 1.2 5.5 3.3C14 6.2 15.5 5 17.5 5 21 5 22.6 8.6 21.2 11.4 19 15.6 12 20 12 20z"/></svg>Salvos</a>
+      <a href="#sec-sobre" data-sec="sec-sobre"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/></svg><span class="lg-only">Como funciona</span><span class="sm-only">Sobre</span></a>
     </nav>
   </div>
 </header>
 
-
-
 <div class="wrap">
-  <header>
-    <h1>Longe da urna</h1>
+  <header id="top">
+    <h1 class="sr">Longe da urna</h1>
     <p class="lead">Regiões onde muita gente mora <b>a mais de 1 hora a pé</b> da seção eleitoral mais próxima. Busque sua cidade ou toque no mapa.</p>
   </header>
 
@@ -144,7 +152,7 @@ details select{font:inherit;padding:8px;border-radius:8px;border:1px solid var(-
     <button type="button" class="chip" id="f-abst" aria-pressed="false">Muita abstenção (22%+)</button>
   </div>
 
-  <div class="mapbox">
+  <div class="mapbox" id="sec-mapa">
     <svg id="map" role="img" aria-label="Mapa do Brasil: municípios mais vermelhos têm mais áreas habitadas longe das seções eleitorais"></svg>
     <div class="zbtn"><button type="button" id="zin" aria-label="Aproximar">+</button><button type="button" id="zout" aria-label="Afastar">−</button></div>
     <button type="button" class="back" id="back" hidden>← Brasil</button>
@@ -155,10 +163,15 @@ details select{font:inherit;padding:8px;border-radius:8px;border:1px solid var(-
 
   <section class="card" id="card" aria-live="polite"></section>
 
-  <section class="card">
+  <section class="card" id="sec-lista">
     <div><div class="eyebrow" id="listscope">Brasil</div><h2 id="listtitle">Onde mais gente mora longe da urna</h2></div>
     <div class="rows" id="list"></div>
     <button type="button" class="more" id="more" hidden>Mostrar mais</button>
+  </section>
+
+  <section class="card" id="sec-salvos">
+    <div><div class="eyebrow">Só neste aparelho</div><h2>Salvos</h2></div>
+    <div class="rows" id="saved"></div>
   </section>
 
   <details id="opts">
@@ -167,7 +180,7 @@ details select{font:inherit;padding:8px;border-radius:8px;border:1px solid var(-
       <select id="colorby"><option value="dist" selected>distância até a seção</option><option value="lula">voto no Lula</option><option value="abst">abstenção</option></select></p>
   </details>
 
-  <details>
+  <details id="sec-sobre">
     <summary>Como calculamos</summary>
     <p>Para cada área habitada (setor censitário do Censo 2022 do IBGE, que reúne um número parecido de domicílios), medimos a distância em linha reta até o local de votação mais próximo do mesmo município. Uma área é <b>longe</b> quando fica a 5 km ou mais, o que dá mais de 1 hora a pé. Um município é <b>região longe</b> quando 20% ou mais das suas áreas habitadas são longe. Pela estrada ou pelo rio a distância costuma ser maior.</p>
     <p>Voto no Lula e abstenção são do 1º turno de 4 de outubro de 2026, para presidente, com dados do TSE por seção. "Lula forte" é 60% ou mais dos votos válidos; "muita abstenção" é 22% ou mais dos eleitores aptos.</p>
@@ -272,20 +285,36 @@ function renderCard(){
   if(SEL.type==="mun"){const m=M[SEL.id];
     const locs=LOADED===m.uf?LV.filter(d=>d.mun===m.n&&d.lg).sort((a,b)=>b.cm[1]-a.cm[1]):null;
     card.innerHTML=`<div><div class="eyebrow">${m.uf} · ${m.z.length} zona${m.z.length>1?"s":""} eleitora${m.z.length>1?"is":"l"}</div><h2>${m.n}</h2></div>
-    ${badge(longe(m),longe(m)?"Região longe das seções":"Região perto das seções")}
+    <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center">${badge(longe(m),longe(m)?"Região longe das seções":"Região perto das seções")}${saveBtn({type:"mun",id:SEL.id})}</div>
     <div>${pct(farS(m))} das áreas habitadas ficam a 5 km ou mais (mais de 1 hora a pé) da seção eleitoral mais próxima.</div>
     <div class="facts"><span>Lula <b>${pct1(lula(m))}</b></span><span>Abstenção <b>${pct1(abst(m))}</b></span><span>Eleitores <b>${int(m.a)}</b></span><span>Faltaram <b>${int(m.b)}</b></span></div>
     ${locs===null?`<div class="empty">Carregando locais de votação…</div>`:locs.length?`<div class="eyebrow" style="margin-top:6px">Locais de votação que atendem regiões longe</div><div class="rows">${locs.slice(0,12).map(d=>`<button type="button" class="row" data-i="${d.i}"><span class="nm">${d.nome}</span><span class="sub">zona ${d.z} · Lula ${pct(d.lr)} · abstenção ${pct(d.r)}</span><span class="pc">${km(d.cm[1])}<small>em média</small></span></button>`).join("")}</div>`:`<div class="empty">Nenhum local de votação deste município atende região longe.</div>`}`;
-    card.querySelectorAll("[data-i]").forEach(b=>b.onclick=()=>pickLocal(LV[+b.dataset.i]));return}
+    card.querySelectorAll("[data-i]").forEach(b=>b.onclick=()=>pickLocal(LV[+b.dataset.i]));
+    document.getElementById("savebtn").onclick=()=>toggleSave({type:"mun",id:SEL.id,name:`${m.n} · ${m.uf}`,sub:`Município · Lula ${pct(lula(m))} · abstenção ${pct(abst(m))}`,longe:longe(m)});return}
   const d=SEL.d;
   card.innerHTML=`<div><div class="eyebrow">${d.mun} · zona ${d.z}</div><h2>${d.nome}</h2>${d.bairro?`<div class="facts">${d.bairro}</div>`:""}</div>
-  ${badge(d.lg,d.lg?"Atende região longe das seções":"Atende região perto das seções")}
+  <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center">${badge(d.lg,d.lg?"Atende região longe das seções":"Atende região perto das seções")}${saveBtn({type:"loc",uf:LOADED,i:d.i})}</div>
   <div>${d.cm?`Quem mora na região deste local está, em média, a <b>${km(d.cm[1])}</b> dele; o mais longe, a ${km(d.cm[2])}.`:"Sem dado de distância para este local."}</div>
   <div class="facts"><span>Lula <b>${pct1(d.lr)}</b></span><span>Abstenção <b>${pct1(d.r)}</b></span><span>Eleitores <b>${int(d.a)}</b></span><span>Seções <b>${d.secs.length}</b></span></div>
   <details><summary>Ver seções</summary><div class="rows">${d.secs.map(([n,a,b,l,v])=>`<div class="row" style="cursor:default"><span class="nm">Seção ${n}</span><span class="sub">${int(a)} eleitores · abstenção ${a?pct(b/a):"–"}</span><span class="pc">${v?pct(l/v):"–"}<small>Lula</small></span></div>`).join("")}</div></details>
   ${M[SEL.mid]?`<button type="button" class="more" id="tomun">Ver ${d.mun}</button>`:""}`;
   const tm=document.getElementById("tomun");if(tm)tm.onclick=()=>pickMun(SEL.mid,false);
+  document.getElementById("savebtn").onclick=()=>toggleSave({type:"loc",uf:LOADED,i:d.i,name:d.nome,sub:`${d.mun} · zona ${d.z} · Lula ${pct(d.lr)} · abstenção ${pct(d.r)}`,longe:d.lg});
 }
+
+// salvos (guardados só neste navegador)
+const SKEY="longe-da-urna-salvos";
+let SAVED=[];try{SAVED=JSON.parse(localStorage.getItem(SKEY)||"[]")}catch(e){SAVED=[]}
+const keyOf=s=>s.type==="mun"?"m"+s.id:"l"+s.uf+"-"+s.i;
+function isSaved(s){return SAVED.some(x=>keyOf(x)===keyOf(s))}
+function toggleSave(s){if(isSaved(s))SAVED=SAVED.filter(x=>keyOf(x)!==keyOf(s));else SAVED.unshift(s);try{localStorage.setItem(SKEY,JSON.stringify(SAVED))}catch(e){}renderSaved();renderCard()}
+const HEART=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20s-7-4.4-9.2-8.6C1.4 8.6 3 5 6.5 5c2 0 3.5 1.2 5.5 3.3C14 6.2 15.5 5 17.5 5 21 5 22.6 8.6 21.2 11.4 19 15.6 12 20 12 20z"/></svg>`;
+function saveBtn(s){const on=isSaved(s);return `<button type="button" class="save" id="savebtn" aria-pressed="${on}">${HEART}${on?"Salvo":"Salvar"}</button>`}
+function renderSaved(){const el=document.getElementById("saved");
+  el.innerHTML=SAVED.length?SAVED.map((s,k)=>`<button type="button" class="row" data-k="${k}"><span class="nm">${s.name}</span><span class="sub">${s.sub}</span><span class="pc">${s.longe?"Longe":"Perto"}<small>da urna</small></span></button>`).join(""):`<div class="empty">Toque em "Salvar" num município ou local de votação para guardar aqui.</div>`;
+  el.querySelectorAll("[data-k]").forEach(b=>b.onclick=async()=>{const s=SAVED[+b.dataset.k];
+    if(s.type==="mun"){pickMun(s.id,true)}else{setUF(s.uf,false);await loadUF(s.uf);const d=LV[s.i];if(d)pickLocal(d)}
+    document.getElementById("sec-mapa").scrollIntoView({behavior:"smooth",block:"start"})})}
 
 // lista
 const list=document.getElementById("list"), more=document.getElementById("more");
@@ -327,7 +356,15 @@ document.getElementById("colorby").onchange=e=>{COLOR=e.target.value;paint();leg
 
 document.getElementById("src").innerHTML=`Fontes: TSE (<a href="https://dadosabertos.tse.jus.br/" target="_blank" rel="noopener">dados abertos</a>: votação por seção, detalhe por município e zona, eleitorado por local de votação, 2026) e IBGE (malha de setores censitários do Censo 2022). Arquivo do TSE gerado em ${meta.gen}.`;
 
-paint();legend();renderList();renderCard();
+const navLinks=[...document.querySelectorAll(".bl-nav a")];
+function setNav(id){navLinks.forEach(a=>{if(a.dataset.sec===id)a.setAttribute("aria-current","page");else a.removeAttribute("aria-current")})}
+navLinks.forEach(a=>a.addEventListener("click",e=>{e.preventDefault();const el=document.getElementById(a.dataset.sec);if(el.tagName==="DETAILS")el.open=true;spyHold=Date.now()+1200;el.scrollIntoView({behavior:"smooth",block:"start"});setNav(a.dataset.sec)}));
+document.querySelector(".app-logo").addEventListener("click",e=>{e.preventDefault();window.scrollTo({top:0,behavior:"smooth"});setNav("top")});
+const SECS=["top","sec-mapa","sec-lista","sec-salvos","sec-sobre"];
+let spyHold=0;
+function spy(){if(Date.now()<spyHold)return;const y=84;let cur="top";for(const id of SECS){const r=document.getElementById(id).getBoundingClientRect();if(r.top-y<window.innerHeight*.35)cur=id}setNav(cur)}
+window.addEventListener("scroll",()=>requestAnimationFrame(spy),{passive:true});
+paint();legend();renderList();renderCard();renderSaved();
 </script>
 
 </body>
