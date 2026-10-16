@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Longe da urna</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;900&display=swap">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
 html{-webkit-text-size-adjust:100%}[hidden]{display:none!important}body{margin:0}
@@ -88,6 +89,40 @@ details select{font:inherit;padding:8px;border-radius:8px;border:1px solid var(-
 </style>
 </head>
 <body>
+<style>
+.bl-top{background:#C3090A;color:#fff;margin-inline:calc(-1 * max(16px, env(safe-area-inset-left, 0px)));margin-top:-16px;margin-bottom:16px;padding-top:env(safe-area-inset-top,0px)}
+.bl-in{max-width:1100px;margin:0 auto;display:flex;align-items:stretch;gap:28px;padding:0 max(24px, env(safe-area-inset-left, 0px));min-height:76px;font-family:"Montserrat","Public Sans",system-ui,sans-serif}
+.bl-logo{display:flex;flex-direction:column;justify-content:center;color:#fff;text-decoration:none;font-weight:900;font-size:1.45rem;line-height:.86;letter-spacing:.01em;text-transform:uppercase;flex:0 0 auto}
+.bl-logo span{display:block}
+.bl-logo .a{position:relative;display:inline-block}
+.bl-logo .a::after{content:"★";position:absolute;left:50%;bottom:-.02em;transform:translateX(-50%);color:#C3090A;font-size:.5em;line-height:1}
+.bl-nav{display:flex;align-items:stretch;gap:8px;overflow-x:auto;scrollbar-width:none}
+.bl-nav::-webkit-scrollbar{display:none}
+.bl-nav a{display:flex;align-items:center;gap:8px;padding:0 14px;color:#fff;text-decoration:none;font-weight:700;font-size:1rem;white-space:nowrap;border-bottom:4px solid transparent;border-top:4px solid transparent}
+.bl-nav a[aria-current="page"]{border-bottom-color:#FFC800}
+.bl-nav a:hover{background:rgba(255,255,255,.08)}
+.bl-nav a:focus-visible{outline:2px solid #fff;outline-offset:-4px}
+.bl-nav svg{width:22px;height:22px;flex:0 0 auto}
+@media (max-width:640px){
+  .bl-in{gap:10px;padding:0 12px;min-height:64px}
+  .bl-logo{font-size:1.05rem}
+  .bl-nav{gap:0;flex:1;justify-content:space-between}
+  .bl-nav a{flex-direction:column;justify-content:center;gap:2px;padding:0 6px;font-size:.68rem}
+  .bl-nav svg{width:20px;height:20px}
+}
+</style>
+<header class="bl-top">
+  <div class="bl-in">
+    <a class="bl-logo" href="https://boralula.org/" aria-label="Bora Lula, página inicial"><span>Bora</span><span>Lul<span class="a">A</span></span></a>
+    <nav class="bl-nav" aria-label="Navegação principal">
+      <a href="https://boralula.org/"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V20a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1V9.5"/></svg>Início</a>
+      <a href="https://boralula.org/"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 4 3 6.5v13.5l6-2.5 6 2.5 6-2.5V4l-6 2.5z"/><path d="M9 4v13.5M15 6.5V20"/></svg>Mapa</a>
+      <a href="https://boralula.org/"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20s-7-4.4-9.2-8.6C1.4 8.6 3 5 6.5 5c2 0 3.5 1.2 5.5 3.3C14 6.2 15.5 5 17.5 5 21 5 22.6 8.6 21.2 11.4 19 15.6 12 20 12 20z"/></svg>Salvos</a>
+      <a href="./" aria-current="page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3v18h18"/><path d="M8 17v-5M12.5 17V8M17 17v-8"/></svg>Painel</a>
+    </nav>
+  </div>
+</header>
+
 
 
 <div class="wrap">
