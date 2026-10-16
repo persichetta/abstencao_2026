@@ -1,14 +1,16 @@
-# abstenção e votos no lula, eleições gerais de 2026 (1º turno)
+# longe da urna
 
-mapa interativo da abstenção e dos votos no lula no 1º turno de 4/10/2026, com estas camadas:
+mapa das regiões onde muita gente mora a mais de 1 hora a pé (5 km ou mais, em linha reta) da seção eleitoral mais próxima, com filtros de voto no lula e abstenção no 1º turno de 2026.
 
-- **sobreposição** (visão padrão): três camadas no mesmo lugar. a cor cruza abstenção e voto no lula (3×3, faixas pelos tercis dos municípios: abstenção <19%, 19–22%, ≥22%; lula <36%, 36–60%, ≥60%). a terceira camada diz se a região fica **longe** ou **perto** das seções eleitorais: uma área habitada (setor censitário do censo 2022) é longe quando fica a 5 km ou mais, em linha reta, do local de votação mais próximo do mesmo município (mais de 1 hora a pé); um município ou zona é longe quando 20% ou mais das suas áreas habitadas são longe; um local de votação é longe quando quem mora em volta está, em média, a 5 km ou mais dele. no brasil, regiões longe aparecem hachuradas; nos estados, pontinhos escuros marcam áreas longe e locais que atendem regiões longe aparecem maiores;
+- **tela inicial**: busca por cidade, filtros "lula forte (60%+)" e "muita abstenção (22%+)", mapa dos municípios pela parcela de áreas habitadas longe da seção, e a lista de onde mais gente mora longe da urna;
+- **município**: diz se é região longe ou perto das seções, com voto no lula, abstenção e os locais de votação que atendem regiões longe;
+- **estado**: pontos vermelhos marcam as áreas habitadas a 5 km ou mais da seção; locais de votação com anel atendem regiões longe;
+- **local de votação**: distância média de quem mora na região, voto no lula, abstenção e seções;
+- **mais opções**: colorir o mapa por voto no lula ou abstenção.
 
-- **município**: choropleth do brasil inteiro, alternando entre abstenção e % dos votos válidos no lula;
-- **zona eleitoral**: abstenção e votos no lula de cada zona nos painéis;
-- **abstenção onde lula venceu**: abstenção só nos municípios (mapa) e zonas (tabelas) onde lula foi o candidato mais votado no 1º turno;
-- **local de votação**: pontos por estado, com a abstenção de cada seção;
-- **tipo de área**: setor censitário do censo 2022 em que cada local de votação cai.
+uma área habitada é um setor censitário do censo 2022; um município é região longe quando 20% ou mais das suas áreas habitadas ficam a 5 km ou mais da seção mais próxima.
+
+pela lei 6.091/1974, no dia da eleição o transporte de eleitores por terceiros é proibido (o eleitor e a família podem usar o próprio veículo); a justiça eleitoral oferece transporte gratuito nas zonas rurais.
 
 ## como publicar
 
