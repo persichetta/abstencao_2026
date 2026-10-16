@@ -143,7 +143,7 @@ aside h2{font-size:1.05rem;margin:0;text-wrap:balance}
   <header>
     <div>
       <h1>Onde levar o eleitor do Lula à urna</h1>
-      <p class="sub"><span class="hide-sm">Sobreposição de três camadas do 1º turno (4 de outubro), em cada lugar: abstenção, voto no Lula e distância do local de votação. A cor cruza abstenção e voto no Lula; a textura dos municípios, os pontos cinza e o tamanho dos locais de votação mostram quão longe as áreas habitadas estão das seções eleitorais. <span> Escolha um estado para ver zonas e locais de votação.</span></span><span class="show-sm">Abstenção, voto no Lula e distância das áreas habitadas até a seção eleitoral, no 1º turno (4/10). Toque num município ou local para ver os números.</span></p>
+      <p class="sub"><span class="hide-sm">Sobreposição de três camadas do 1º turno (4 de outubro), em cada lugar: abstenção, voto no Lula e distância do local de votação. A cor cruza abstenção e voto no Lula; a hachura (no Brasil) e os pontos escuros (nos estados) mostram as regiões longe das seções eleitorais, onde muita gente mora a mais de 1 hora a pé da urna. <span> Escolha um estado para ver zonas e locais de votação.</span></span><span class="show-sm">Abstenção, voto no Lula e se a região fica longe ou perto das seções eleitorais, no 1º turno (4/10). Toque num município ou local para ver os números.</span></p>
     </div>
     <div class="kpis" id="kpis"></div>
   </header>
@@ -156,8 +156,8 @@ aside h2{font-size:1.05rem;margin:0;text-wrap:balance}
         <datalist id="muns"></datalist>
         <button id="reset" type="button">Ver Brasil</button>
         <div class="filters" id="prifilters">
-          <label for="pri-rem">Locais pela distância da região
-            <select id="pri-rem"><option value="0" selected>todas</option><option value="1">região a 2 km ou mais</option><option value="2">região a 5 km ou mais</option></select></label>
+          <label for="pri-rem">Mostrar locais
+            <select id="pri-rem"><option value="0" selected>perto e longe</option><option value="2">só regiões longe</option></select></label>
           <label for="pri-lula">Cor
             <select id="pri-lula"><option value="all" selected>todas as combinações</option><option value="hot">só abstenção alta + Lula alto</option></select></label>
         </div>
@@ -205,12 +205,14 @@ const quadTxt=(r,lr)=>`Abstenção ${ABN[t3(r,AB)]} · Lula ${LBN[t3(lr,LB)]}`;
 const quadChip=(r,lr)=>`<span class="chip"><i style="background:${bivar(r,lr)}"></i>${quadTxt(r,lr)}</span>`;
 const raTot=a=>Math.max(1,a[0]+a[1]+a[2]+a[3]);
 const remShare=a=>(a[2]+a[3])/raTot(a);
-const munRem=m=>{const s=remShare(m.sd);return s>=.4?2:s>=.2?1:0};
+const munRem=m=>remShare(m.sd)>=.2?2:0;
+const zoneLonge=k=>remShare(meta.zs[k]||[1,0,0,0])>=.2;
+const LONGE=v=>v?`<b style="color:var(--accent)">Longe</b>`:"Perto";
 const REMN=["Perto","Média","Longe"], remCol=i=>`var(--r${[1,3,5][i]})`;
 const BANDN=["até 2 km","2 a 5 km","5 a 10 km","10 km ou mais"], bandCol=i=>i?`var(--f${i})`:"var(--nodata)";
 const kmf=v=>v.toLocaleString("pt-BR",{maximumFractionDigits:1})+" km";
-const regTxt=d=>d.cm?`região atendida: ${d.cm[0]} setor${d.cm[0]>1?"es":""} censitário${d.cm[0]>1?"s":""}, em média a ${kmf(d.cm[1])} da seção, o mais longe a ${kmf(d.cm[2])}`:"sem setor censitário atribuído";
-const remChip=i=>`<span class="chip"><i style="background:${remCol(i)}"></i>Região ${["perto","a média distância","longe"][i]} da seção</span>`;
+const regTxt=d=>d.cm?(d.rl===2?`Região <b>longe</b> das seções: quem mora em volta está, em média, a ${kmf(d.cm[1])} deste local (mais de 1 hora a pé)`:`Região <b>perto</b> das seções: quem mora em volta está, em média, a ${kmf(d.cm[1])} deste local`):"sem dado de distância";
+const remChip=i=>`<span class="chip"><i style="background:${i===2?"var(--f3)":"var(--nodata)"}"></i>Região ${i===2?"longe":"perto"} das seções</span>`;
 const pbreaks=[50,150,400,1000,2500,5000];
 const pbin=r=>{let i=0;while(i<pbreaks.length&&r>=pbreaks[i])i++;return i};
 const munE=m=>m.e.slice(REM()).reduce((s,x)=>s+x,0);
@@ -237,8 +239,8 @@ const lg=document.getElementById("legend");let LEG0;
 function legHTML(){if(MET==="pri"){
    const cells=[2,1,0].map(a=>`<span>${a===2?"≥22":a===1?"19–22":"<19"}</span>${[0,1,2].map(l=>`<i style="background:var(--b${a}${l})"></i>`).join("")}`).join("");
    const grid=`<div class="t">Abstenção × voto no Lula</div><div class="biv">${cells}<span></span><span class="xl">&lt;36</span><span class="xl">36–60</span><span class="xl">≥60</span></div><div style="font-size:.65rem;color:var(--muted);margin-top:2px">linhas: abstenção (%) · colunas: Lula (% dos válidos)</div>`;
-   const dist=loaded?`<div class="t" style="margin-top:8px">Distância da região até a seção</div><div style="font-size:.65rem;color:var(--muted)">pontos cinza: áreas habitadas (setores censitários) longe da seção mais próxima</div>${[1,2,3].map(i=>`<div class="lgrow"><svg width="16" height="12"><circle cx="8" cy="6" r="2.5" fill="${bandCol(i)}"/></svg>${BANDN[i]}</div>`).join("")}<div style="font-size:.65rem;color:var(--muted);margin-top:4px">tamanho do local: distância média da região que ele atende (até 2 km, 2 a 5 km, 5 km ou mais)</div>`
-     :`<div class="t" style="margin-top:8px">Distância da região até a seção (textura)</div><div style="font-size:.65rem;color:var(--muted)">área habitada a 5 km ou mais da seção mais próxima</div>${[1,2].map(i=>`<div class="lgrow"><svg width="16" height="12"><rect width="16" height="12" fill="var(--b11)"/><rect width="16" height="12" fill="url(#h${i})"/></svg>${i===1?"20% a 40%":"40% ou mais"}</div>`).join("")}`;
+   const dist=loaded?`<div class="t" style="margin-top:8px">Longe ou perto das seções?</div><div class="lgrow"><svg width="16" height="12"><circle cx="8" cy="6" r="2.5" fill="var(--f3)"/></svg>área habitada longe: 5 km ou mais da seção (mais de 1 h a pé)</div><div class="lgrow"><svg width="16" height="16"><circle cx="8" cy="8" r="6.5" fill="var(--b22)"/></svg>local grande: atende região longe</div><div class="lgrow"><svg width="16" height="16"><circle cx="8" cy="8" r="2.8" fill="var(--b22)"/></svg>local pequeno: atende região perto</div>`
+     :`<div class="t" style="margin-top:8px">Longe ou perto das seções?</div><div class="lgrow"><svg width="16" height="12"><rect width="16" height="12" fill="var(--b11)"/><rect width="16" height="12" fill="url(#h2)"/></svg>Longe: muita gente mora a 5 km ou mais da seção (mais de 1 h a pé)</div><div class="lgrow"><svg width="16" height="12"><rect width="16" height="12" fill="var(--b11)"/></svg>Perto: sem hachura</div>`;
    return grid+dist}
  if(MET==="win")return `<div class="t">Abstenção onde Lula venceu, %</div><div class="row">${[0,1,2,3,4,5,6].map(i=>`<div class="sw" style="background:${cvar(i)}"></div>`).join("")}</div><div class="ticks">${breaks.map(b=>`<span>${Math.round(b*100)}</span>`).join("")}</div><div style="display:flex;align-items:center;gap:6px;font-size:.72rem;margin-top:6px"><i style="width:14px;height:10px;background:var(--nodata)"></i>Lula não foi o mais votado</div>`;
  return MET==="lula"
@@ -265,8 +267,8 @@ const paths=g.selectAll("path.m").data(feats).join("path").attr("class","m").att
   .attr("fill",d=>{const m=M[d.properties.id];return m?munFill(m):"var(--nodata)"})
   .on("mousemove",(e,d)=>{const m=M[d.properties.id];const r=box.getBoundingClientRect();
     tip.hidden=false;
-    tip.innerHTML=m?`<b>${m.n}</b> · ${m.uf} · ${m.z.length} zona${m.z.length>1?"s":""}<br><span class="n">${pct(m.b/m.a)}</span> de abstenção<br><span class="n">${m.v?pct(m.l/m.v):"–"}</span> dos válidos no Lula<br>${m.w?"Lula foi o mais votado":"Lula não foi o mais votado"}${m.v?`<br>${quadTxt(m.b/m.a,m.l/m.v)}`:""}<div class="tiphint">Detalhes no painel abaixo do mapa ↓</div><div class="tipd"><div class="tipt">Áreas habitadas (setores censitários) por distância até a seção eleitoral mais próxima</div>
-      ${[3,2,1,0].map(i=>`<div class="tipr"><i style="background:${bandCol(i)}"></i><span>${BANDN[i]}</span><span class="n">${pct(m.sd[i]/raTot(m.sd))}</span></div>`).join("")}</div>`:`<b>${d.properties.name}</b><br>sem dados`;
+    tip.innerHTML=m?`<b>${m.n}</b> · ${m.uf} · ${m.z.length} zona${m.z.length>1?"s":""}<br><span class="n">${pct(m.b/m.a)}</span> de abstenção<br><span class="n">${m.v?pct(m.l/m.v):"–"}</span> dos válidos no Lula<br>${m.w?"Lula foi o mais votado":"Lula não foi o mais votado"}${m.v?`<br>${quadTxt(m.b/m.a,m.l/m.v)}`:""}<div class="tiphint">Detalhes no painel abaixo do mapa ↓</div><div class="tipd">
+      <div class="tipr"><i style="background:${munRem(m)?"var(--f3)":"var(--nodata)"}"></i><span><b>Região ${munRem(m)?"longe":"perto"} das seções eleitorais</b><br>${pct(remShare(m.sd))} das áreas habitadas ficam a 5 km ou mais (mais de 1 hora a pé) da seção mais próxima</span><span></span></div></div>`:`<b>${d.properties.name}</b><br>sem dados`;
     let x=e.clientX-r.left+14,y=e.clientY-r.top+14;
     if(x+tip.offsetWidth>r.width-8)x=e.clientX-r.left-tip.offsetWidth-14;
     if(y+tip.offsetHeight>r.height-8)y=Math.max(8,e.clientY-r.top-tip.offsetHeight-14);
@@ -290,7 +292,7 @@ const gfar=svg.append("g");
 const gp=svg.append("g");
 const farR=()=>1.1/Math.pow(curK,.8)*1.2;
 let curK=1;
-const rad=d=>(MET==="pri"?[1.7,3.3,5.6][d.rl]:Math.max(1.6,Math.sqrt(d.a)/9))/Math.pow(curK,.8)*1.2;
+const rad=d=>(MET==="pri"?[2,2,5.2][d.rl]:Math.max(1.6,Math.sqrt(d.a)/9))/Math.pow(curK,.8)*1.2;
 const passes=d=>d.rl>=REM()&&(!HOT()||isHot(d.r,d.lr));
 const zoom=d3.zoom().scaleExtent([1,400]).on("zoom",e=>{g.attr("transform",e.transform);gp.attr("transform",e.transform);gfar.attr("transform",e.transform);curK=e.transform.k;gfar.selectAll("circle").attr("r",farR);gp.selectAll("circle").attr("r",rad)});
 zoom.filter(e=>e.type==="touchstart"?e.touches.length>1:(!e.ctrlKey||e.type==="wheel")&&!e.button);
@@ -337,11 +339,11 @@ async function loadUF(uf){
     if(!cache[uf]){const [r,rf]=await Promise.all([fetch(`data/${uf}.json`),fetch(`far/${uf}.json`)]);if(!r.ok)throw new Error(r.status);cache[uf]=await r.json();cache["far"+uf]=rf.ok?await rf.json():[];}
   }catch(e){layer.textContent=`Não consegui carregar os locais de ${uf}. Tente de novo.`;loaded=null;return}
   if(loaded!==uf)return;
-  LV=cache[uf].map(([lat,lon,nome,mun,z,bairro,secs,cat,dist,rl0,cm],i)=>{const rl=cm?(cm[1]>=5?2:cm[1]>=2?1:0):0;let a=0,b=0,l=0,v=0,e=0;for(const s of secs){a+=s[1];b+=s[2];l+=s[3]||0;v+=s[4]||0;if(s[4])e+=s[2]*s[3]/s[4]}return {i,uf,lat,lon,nome,mun,z,bairro,secs,cat,dist,rl,cm,a,b,l,v,e,lr:v?l/v:0,r:a?b/a:0,xy:lat!=null?proj([lon,lat]):null}});
+  LV=cache[uf].map(([lat,lon,nome,mun,z,bairro,secs,cat,dist,rl0,cm],i)=>{const rl=cm&&cm[1]>=5?2:0;let a=0,b=0,l=0,v=0,e=0;for(const s of secs){a+=s[1];b+=s[2];l+=s[3]||0;v+=s[4]||0;if(s[4])e+=s[2]*s[3]/s[4]}return {i,uf,lat,lon,nome,mun,z,bairro,secs,cat,dist,rl,cm,a,b,l,v,e,lr:v?l/v:0,r:a?b/a:0,xy:lat!=null?proj([lon,lat]):null}});
   const pts=LV.filter(d=>d.xy).sort((x,y)=>y.a-x.a);
   svg.classed("dim",true);
-  gfar.selectAll("circle").data(cache["far"+uf].map(([la,lo,dd])=>({xy:proj([lo,la]),b:dd>=10?3:dd>=5?2:1})).sort((a,b)=>a.b-b.b)).join("circle").attr("class","far")
-    .attr("cx",d=>d.xy[0]).attr("cy",d=>d.xy[1]).attr("r",farR).attr("fill",d=>bandCol(d.b));
+  gfar.selectAll("circle").data(cache["far"+uf].filter(p=>p[2]>=5).map(([la,lo])=>({xy:proj([lo,la])}))).join("circle").attr("class","far")
+    .attr("cx",d=>d.xy[0]).attr("cy",d=>d.xy[1]).attr("r",farR).attr("fill","var(--f3)");
   gfar.attr("display",MET==="pri"?null:"none");
   gp.selectAll("circle").data(pts,d=>d.uf+d.i).join("circle").attr("class","lv")
     .attr("cx",d=>d.xy[0]).attr("cy",d=>d.xy[1]).attr("r",rad).attr("fill",ptFill).attr("display",d=>MET!=="pri"||passes(d)?null:"none")
@@ -354,7 +356,7 @@ async function loadUF(uf){
   if(MET==="pri"&&ufSel.value&&UFCODE[ufSel.value]===uf&&!(selected&&M[selected]))showUF(uf);
   if(document.getElementById("ufarea")&&ufSel.value&&UFCODE[ufSel.value]===uf)document.getElementById("ufarea").innerHTML=`<div class="eyebrow">Abstenção por tipo de área</div>${areaTable(areaAgg(LV))}`;
   const semc=LV.length-pts.length;
-  layer.textContent=`${int(pts.length)} locais de votação em ${uf}${semc?` (${semc} sem coordenada)`:""} · ${MET==="pri"?"cor = abstenção × Lula · tamanho = distância da região até a seção · pontos cinza = áreas longe das seções":"tamanho = eleitores aptos"}`;
+  layer.textContent=`${int(pts.length)} locais de votação em ${uf}${semc?` (${semc} sem coordenada)`:""} · ${MET==="pri"?"cor = abstenção × Lula · ponto grande = local que atende região longe · pontinhos escuros = áreas longe das seções":"tamanho = eleitores aptos"}`;
 }
 function clearPts(){loaded=null;LV=[];gfar.selectAll("circle").remove();setTimeout(updateHatch);colorSel.hidden=true;lg.innerHTML=legHTML();gp.selectAll("circle").remove();svg.classed("dim",false);layer.textContent="Escolha um estado para ver os locais de votação"}
 function showLocal(d){
@@ -377,19 +379,19 @@ const panel=document.getElementById("panel");
 function barCell(r){return `<div class="bar"><i style="width:${Math.min(100,r/.4*100)}%;background:${cvar(bin(r))}"></i></div>`}
 function zoneRows(list){return list.map(o=>`<tr class="click" data-k="${o.uf}-${o.z}"><td>${o.uf} · zona ${o.z}${o.w?"":` <span class="delta">(Lula não venceu)</span>`}<div class="delta">${o.mun.length===1?M[o.mun[0]].n:o.mun.length+" municípios"}</div></td><td class="num">${int(o.a)}</td><td class="num">${pct(o.r)}</td><td style="width:60px;padding-left:8px">${lulaBar(o.lr)}</td><td class="num">${pct(o.lr)}</td></tr>`).join("")}
 function bindZones(){panel.querySelectorAll("tr[data-k]").forEach(tr=>tr.onclick=()=>{const o=Z[tr.dataset.k];showMun(o.mun.slice().sort((a,b)=>M[b].a-M[a].a)[0],true)})}
-const TH3=`<th class="num">Abst.</th><th class="num">Lula</th><th class="num">5 km+</th>`;
-function priMunRows(list){return list.map(([id,m])=>`<tr class="click" data-m="${id}"><td><span class="chip" style="border:0;padding:0"><i style="background:${bivar(m.b/m.a,m.l/m.v)}"></i>${m.n}</span><div class="delta">${m.uf}</div></td><td class="num">${pct(m.b/m.a)}</td><td class="num">${pct(m.l/m.v)}</td><td class="num">${pct(remShare(m.sd))}</td></tr>`).join("")}
+const TH3=`<th class="num">Abst.</th><th class="num">Lula</th><th class="num">Região</th>`;
+function priMunRows(list){return list.map(([id,m])=>`<tr class="click" data-m="${id}"><td><span class="chip" style="border:0;padding:0"><i style="background:${bivar(m.b/m.a,m.l/m.v)}"></i>${m.n}</span><div class="delta">${m.uf}</div></td><td class="num">${pct(m.b/m.a)}</td><td class="num">${pct(m.l/m.v)}</td><td class="num">${LONGE(munRem(m))}</td></tr>`).join("")}
 function bindMuns(){panel.querySelectorAll("tr[data-m]").forEach(tr=>tr.onclick=()=>showMun(tr.dataset.m,true))}
-function priLocRows(list){return list.map(d=>`<tr class="click" data-i="${d.i}"><td><span class="chip" style="border:0;padding:0"><i style="background:${bivar(d.r,d.lr)}"></i>${d.nome}</span><div class="delta">${d.mun} · zona ${d.z}</div></td><td class="num">${pct(d.r)}</td><td class="num">${d.v?pct(d.lr):"–"}</td><td class="num">${REMN[d.rl]}${d.cm?`<div class="delta">média ${kmf(d.cm[1])}</div>`:""}</td></tr>`).join("")}
+function priLocRows(list){return list.map(d=>`<tr class="click" data-i="${d.i}"><td><span class="chip" style="border:0;padding:0"><i style="background:${bivar(d.r,d.lr)}"></i>${d.nome}</span><div class="delta">${d.mun} · zona ${d.z}</div></td><td class="num">${pct(d.r)}</td><td class="num">${d.v?pct(d.lr):"–"}</td><td class="num">${LONGE(d.rl===2)}</td></tr>`).join("")}
 function bindLocs(el){el.querySelectorAll("tr[data-i]").forEach(tr=>tr.onclick=()=>{const d=LV[+tr.dataset.i];if(d.xy)zoomPt(d);showLocal(d)})}
-function priZoneRows(list){return list.map(o=>{const ra=meta.zs[o.uf+"-"+o.z]||[0,0,0,0];return `<tr class="click" data-k="${o.uf}-${o.z}"><td><span class="chip" style="border:0;padding:0"><i style="background:${bivar(o.r,o.lr)}"></i>Zona ${o.z}</span><div class="delta">${o.mun.length===1?M[o.mun[0]].n:o.mun.length+" municípios"}</div></td><td class="num">${pct(o.r)}</td><td class="num">${pct(o.lr)}</td><td class="num">${pct(remShare(ra))}</td></tr>`}).join("")}
+function priZoneRows(list){return list.map(o=>{const ra=meta.zs[o.uf+"-"+o.z]||[0,0,0,0];return `<tr class="click" data-k="${o.uf}-${o.z}"><td><span class="chip" style="border:0;padding:0"><i style="background:${bivar(o.r,o.lr)}"></i>Zona ${o.z}</span><div class="delta">${o.mun.length===1?M[o.mun[0]].n:o.mun.length+" municípios"}</div></td><td class="num">${pct(o.r)}</td><td class="num">${pct(o.lr)}</td><td class="num">${LONGE(zoneLonge(o.uf+"-"+o.z))}</td></tr>`}).join("")}
 const hotMuns=f=>Object.entries(M).filter(([,m])=>m.v&&isHot(m.b/m.a,m.l/m.v)&&(!f||f(m))).sort((a,b)=>(b[1].sd[2]+b[1].sd[3])-(a[1].sd[2]+a[1].sd[3]));
-const explain=`<div class="delta">"5 km+" = parcela dos setores censitários (áreas habitadas com número parecido de domicílios) que ficam a 5 km ou mais da seção eleitoral mais próxima.</div>`;
+const explain=`<div class="delta"><b>Longe</b> = muita gente da região mora a 5 km ou mais (mais de 1 hora a pé) da seção eleitoral mais próxima. <b>Perto</b> = o resto.</div>`;
 function showBRpri(){
   const hot=hotMuns(), hotRem=hot.filter(([,m])=>munRem(m)>0);
   panel.innerHTML=`<div><div class="eyebrow">Brasil · sobreposição</div><h2>${int(hot.length)} municípios com abstenção alta e Lula alto</h2>
-  <div class="delta">${int(hotRem.length)} deles têm 20% ou mais da área habitada a 5 km ou mais da seção eleitoral mais próxima (hachurados no mapa).</div></div>
-  <div><div class="eyebrow">Abstenção alta + Lula alto, mais áreas longe das seções primeiro</div><div class="scroll"><table class="tbl"><thead><tr><th>Município</th>${TH3}</tr></thead><tbody>${priMunRows(hot.slice(0,40))}</tbody></table></div></div>${explain}`;
+  <div class="delta">${int(hotRem.length)} deles são regiões <b>longe</b> das seções eleitorais (hachurados no mapa).</div></div>
+  <div><div class="eyebrow">Abstenção alta + Lula alto, regiões longe primeiro</div><div class="scroll"><table class="tbl"><thead><tr><th>Município</th>${TH3}</tr></thead><tbody>${priMunRows(hot.slice(0,40))}</tbody></table></div></div>${explain}`;
   bindMuns();
 }
 function showBR(){
@@ -408,11 +410,11 @@ function showBR(){
 }
 function showUFpri(uf){
   const hot=hotMuns(m=>m.uf===uf);
-  const zs=zonas.filter(o=>o.uf===uf&&(!HOT()||isHot(o.r,o.lr))).sort((a,b)=>(isHot(b.r,b.lr)-isHot(a.r,a.lr))||(remShare(meta.zs[b.uf+"-"+b.z]||[1,0,0,0])-remShare(meta.zs[a.uf+"-"+a.z]||[1,0,0,0])));
+  const zs=zonas.filter(o=>o.uf===uf&&(!HOT()||isHot(o.r,o.lr))).sort((a,b)=>(isHot(b.r,b.lr)-isHot(a.r,a.lr))||(zoneLonge(b.uf+"-"+b.z)-zoneLonge(a.uf+"-"+a.z))||(b.b-a.b));
   const locs=loaded===uf?LV.filter(passes).sort((a,b)=>(isHot(b.r,b.lr)-isHot(a.r,a.lr))||(b.rl-a.rl)||(b.b-a.b)):null;
   panel.innerHTML=`<div><div class="eyebrow">${uf} · sobreposição</div><h2>${int(hot.length)} municípios com abstenção alta e Lula alto</h2></div>
-  <div><div class="eyebrow">Zonas eleitorais · abstenção alta + Lula alto primeiro, depois as mais distantes</div><div class="scroll" style="max-height:300px"><table class="tbl"><thead><tr><th>Zona</th>${TH3}</tr></thead><tbody>${priZoneRows(zs)}</tbody></table></div></div>
-  <div id="uflocs">${locs?`<div class="eyebrow">${int(locs.length)} locais de votação no filtro · abstenção alta + Lula alto primeiro, depois os mais distantes</div><div class="scroll" style="max-height:340px"><table class="tbl"><thead><tr><th>Local</th><th class="num">Abst.</th><th class="num">Lula</th><th class="num">Distância</th></tr></thead><tbody>${priLocRows(locs.slice(0,80))}</tbody></table></div>`:`<div class="delta">Carregando locais de votação…</div>`}</div>
+  <div><div class="eyebrow">Zonas eleitorais · abstenção alta + Lula alto primeiro, depois as regiões longe</div><div class="scroll" style="max-height:300px"><table class="tbl"><thead><tr><th>Zona</th>${TH3}</tr></thead><tbody>${priZoneRows(zs)}</tbody></table></div></div>
+  <div id="uflocs">${locs?`<div class="eyebrow">${int(locs.length)} locais de votação no filtro · abstenção alta + Lula alto primeiro, depois os de regiões longe</div><div class="scroll" style="max-height:340px"><table class="tbl"><thead><tr><th>Local</th><th class="num">Abst.</th><th class="num">Lula</th><th class="num">Região</th></tr></thead><tbody>${priLocRows(locs.slice(0,80))}</tbody></table></div>`:`<div class="delta">Carregando locais de votação…</div>`}</div>
   ${hot.length?`<div><div class="eyebrow">Municípios com abstenção alta + Lula alto</div><div class="scroll" style="max-height:240px"><table class="tbl"><thead><tr><th>Município</th>${TH3}</tr></thead><tbody>${priMunRows(hot)}</tbody></table></div></div>`:""}${explain}`;
   bindMuns();bindZones();const el=document.getElementById("uflocs");if(locs)bindLocs(el);
 }
@@ -441,7 +443,7 @@ function showMun(id,zoomIn){
   <div><div class="big">${pct(r)}</div><div class="delta">${int(m.b)} abstenções em ${int(m.a)} aptos<br>${m.uf}: ${pct(ufr)} · Brasil: ${pct(natRate)}</div>
   <div style="margin-top:10px"><div class="big" style="color:var(--accent)">${m.v?pct(m.l/m.v):"–"}</div><div class="delta">dos válidos no Lula · ${int(m.l)} de ${int(m.v)} votos válidos<br>${m.uf}: ${pct(meta.ufl[m.uf][0]/meta.ufl[m.uf][1])} · Brasil: ${pct(natLula)}</div></div></div>
   <div class="scroll"><table class="tbl"><thead><tr><th>Zona (parte no município)</th><th class="num">Aptos</th><th class="num">Abst.</th><th></th><th class="num">Lula</th></tr></thead><tbody>${rows}</tbody></table></div>
-  ${MET==="pri"?`<div><div class="eyebrow">Sobreposição</div><div style="margin:4px 0 6px">${m.v?quadChip(m.b/m.a,m.l/m.v):""}</div><div class="delta">Áreas habitadas por distância até a seção mais próxima: ${[0,1,2,3].map(i=>`${BANDN[i]} ${pct(m.sd[i]/raTot(m.sd))}`).join(" · ")}</div></div>`:""}
+  ${MET==="pri"?`<div><div class="eyebrow">Sobreposição</div><div style="margin:4px 0 6px">${m.v?quadChip(m.b/m.a,m.l/m.v):""}</div><div class="delta"><b>Região ${munRem(m)?"longe":"perto"} das seções eleitorais.</b> ${pct(remShare(m.sd))} das áreas habitadas ficam a 5 km ou mais (mais de 1 hora a pé) da seção mais próxima.</div></div>`:""}
   <div id="munlv"></div>
   <button type="button" id="back">Voltar para ${ufSel.value?UFCODE[ufSel.value]:"Brasil"}</button>`;
   fillMunLV(m);
@@ -455,7 +457,7 @@ function setMet(v){MET=v;
   document.getElementById("m-win").setAttribute("aria-pressed",v==="win");
   paths.attr("fill",d=>{const m=M[d.properties.id];return m?munFill(m):"var(--nodata)"});
   LEG0=legHTML(); applyPts(); updateHatch(); legendMode(); if(MET==="pri"||!(colorSel.value==="area"&&loaded)) lg.innerHTML=LEG0;
-  if(loaded)layer.textContent=layer.textContent.replace(/(cor = .* · )?tamanho = .*$/,v==="pri"?"cor = abstenção × Lula · tamanho = distância da região até a seção · pontos cinza = áreas longe das seções":"tamanho = eleitores aptos");
+  if(loaded)layer.textContent=layer.textContent.replace(/(cor = .* · )?tamanho = .*$/,v==="pri"?"cor = abstenção × Lula · ponto grande = local que atende região longe · pontinhos escuros = áreas longe das seções":"tamanho = eleitores aptos");
   svg.attr("aria-label",v==="pri"?"Mapa do Brasil com a sobreposição de abstenção, voto no Lula e distância dos locais de votação":v==="win"?"Mapa do Brasil com a taxa de abstenção nos municípios onde Lula foi o mais votado":v==="lula"?"Mapa do Brasil por município colorido pelo percentual de votos válidos no Lula":"Mapa do Brasil por município colorido pela taxa de abstenção");
   if(selected&&M[selected])showMun(selected,false);else if(ufSel.value)showUF(UFCODE[ufSel.value]);else showBR();}
 document.getElementById("m-pri").onclick=()=>setMet("pri");
@@ -468,7 +470,7 @@ document.getElementById("m-win").onclick=()=>setMet("win");
 function fillMunLV(m){const el=document.getElementById("munlv");if(!el)return;
   if(loaded!==m.uf||!LV.length){setTimeout(()=>{if(selected&&M[selected]===m)fillMunLV(m)},300);return}
   if(MET==="pri"){const list=LV.filter(d=>d.mun===m.n&&passes(d)).sort((a,b)=>(isHot(b.r,b.lr)-isHot(a.r,a.lr))||(b.rl-a.rl)||(b.b-a.b));
-    el.innerHTML=`<div class="eyebrow">${list.length} locais de votação · abstenção alta + Lula alto primeiro, depois os mais distantes</div><div class="scroll" style="max-height:340px"><table class="tbl"><thead><tr><th>Local</th><th class="num">Abst.</th><th class="num">Lula</th><th class="num">Distância</th></tr></thead><tbody>${priLocRows(list)}</tbody></table></div>`;
+    el.innerHTML=`<div class="eyebrow">${list.length} locais de votação · abstenção alta + Lula alto primeiro, depois os de regiões longe</div><div class="scroll" style="max-height:340px"><table class="tbl"><thead><tr><th>Local</th><th class="num">Abst.</th><th class="num">Lula</th><th class="num">Região</th></tr></thead><tbody>${priLocRows(list)}</tbody></table></div>`;
     bindLocs(el);return}
   const list=LV.filter(d=>d.mun===m.n).sort((x,y)=>y.r-x.r);
   el.innerHTML=`<div class="eyebrow">Abstenção por tipo de área</div>${areaTable(areaAgg(list))}<div class="eyebrow" style="margin-top:12px">${list.length} locais de votação, maior abstenção primeiro</div>
@@ -482,7 +484,7 @@ if("IntersectionObserver" in window)new IntersectionObserver(([en])=>{toMap.hidd
 updateHatch();
 showBR();
 
-document.getElementById("note").innerHTML=`<b>Como ler a sobreposição.</b> A cor de cada município, zona ou local de votação cruza duas camadas, cada uma dividida em três faixas pelos tercis dos municípios: abstenção (abaixo de 19%, 19% a 22%, 22% ou mais) e voto no Lula entre os válidos (abaixo de 36%, 36% a 60%, 60% ou mais). O vermelho mais escuro é abstenção alta com Lula alto. A terceira camada é a distância entre as áreas habitadas e as seções: para cada setor censitário do Censo 2022 (áreas que o IBGE desenha com número parecido de domicílios), medimos a distância em linha reta até o local de votação mais próximo do mesmo município. No mapa do Brasil, a hachura marca municípios com 20% a 40% (hachura espaçada) ou 40% ou mais (hachura densa) dos setores a 5 km ou mais da seção mais próxima. Nos estados, os pontos cinza são os setores a 2 km ou mais (mais escuros quanto mais longe) e o tamanho de cada local de votação é a distância média da região que ele atende (setores para os quais ele é o mais próximo): perto até 2 km, média de 2 a 5 km, longe a partir de 5 km. É linha reta: pela estrada ou pelo rio costuma ser mais. Votos por seção: TSE, votação por seção 2026 (presidente). Pela Lei 6.091/1974, candidatos e partidos não podem fornecer transporte a eleitores no dia da eleição; use este mapa para mobilização, informação e articulação de transporte público gratuito.<br><br>Fontes: TSE, <a href="https://dadosabertos.tse.jus.br/" target="_blank" rel="noopener">detalhe da votação por município e zona 2026</a> (arquivo gerado em ${meta.gen}), cargo Presidente, 1º turno, sem votos no exterior. Seções: <a href="https://dadosabertos.tse.jus.br/" target="_blank" rel="noopener">detalhe da votação por seção 2026</a> do TSE, posicionadas pelas coordenadas do arquivo de eleitorado por local de votação (1º turno); 1.606 das 497.897 seções (0,3%) vêm sem coordenada válida e só aparecem nas listas. Tipo de área: setor censitário do Censo 2022 (IBGE) em que cai cada local de votação, pela situação (urbana/rural e subtipos) e pelo tipo do setor (favela e comunidade urbana, indígena, quilombola); "Centro" são os setores urbanos do bairro oficial Centro. O IBGE não tem categoria "periferia": favela e comunidade urbana e urbana de baixa densidade são o mais próximo disso. A classificação é do lugar onde se vota, que costuma ficar perto, mas não necessariamente no mesmo setor, de onde o eleitor mora. Malha municipal do IBGE (via geodata-br), simplificada para a web; códigos TSE→IBGE pela tabela de correspondência betafcc/Municipios-Brasileiros-TSE. Abstenção = abstenções ÷ eleitores aptos. Votos no Lula: TSE, votação por candidato, município e zona 2026 (Lula, 13), sobre os votos válidos para presidente na mesma zona. "Lula venceu" = Lula foi o candidato mais votado no 1º turno naquele município (no mapa) ou zona (nas tabelas); os pontos dos locais de votação não têm votação por candidato e seguem mostrando abstenção ou tipo de área. As zonas não têm polígono próprio, então o mapa colore o município e o painel mostra a parte de cada zona dentro dele. Sete municípios criados após a malha usada (Mojuí dos Campos, Nazária, Pescaria Brava, Balneário Rincão, Pinto Bandeira, Paraíso das Águas e Boa Esperança do Norte, cerca de 69 mil aptos) entram nos totais mas não aparecem no mapa.`;
+document.getElementById("note").innerHTML=`<b>Como ler a sobreposição.</b> A cor de cada município, zona ou local de votação cruza duas camadas, cada uma dividida em três faixas pelos tercis dos municípios: abstenção (abaixo de 19%, 19% a 22%, 22% ou mais) e voto no Lula entre os válidos (abaixo de 36%, 36% a 60%, 60% ou mais). O vermelho mais escuro é abstenção alta com Lula alto. A terceira camada diz se a região fica <b>longe</b> ou <b>perto</b> das seções eleitorais. Para cada área habitada (setor censitário do Censo 2022), medimos a distância em linha reta até o local de votação mais próximo do mesmo município. Uma área é longe quando fica a 5 km ou mais, mais de 1 hora a pé. Um município ou zona é longe quando 20% ou mais das suas áreas habitadas são longe; um local de votação é longe quando quem mora em volta está, em média, a 5 km ou mais dele. Pela estrada ou pelo rio a distância costuma ser maior. Votos por seção: TSE, votação por seção 2026 (presidente). Pela Lei 6.091/1974, candidatos e partidos não podem fornecer transporte a eleitores no dia da eleição; use este mapa para mobilização, informação e articulação de transporte público gratuito.<br><br>Fontes: TSE, <a href="https://dadosabertos.tse.jus.br/" target="_blank" rel="noopener">detalhe da votação por município e zona 2026</a> (arquivo gerado em ${meta.gen}), cargo Presidente, 1º turno, sem votos no exterior. Seções: <a href="https://dadosabertos.tse.jus.br/" target="_blank" rel="noopener">detalhe da votação por seção 2026</a> do TSE, posicionadas pelas coordenadas do arquivo de eleitorado por local de votação (1º turno); 1.606 das 497.897 seções (0,3%) vêm sem coordenada válida e só aparecem nas listas. Tipo de área: setor censitário do Censo 2022 (IBGE) em que cai cada local de votação, pela situação (urbana/rural e subtipos) e pelo tipo do setor (favela e comunidade urbana, indígena, quilombola); "Centro" são os setores urbanos do bairro oficial Centro. O IBGE não tem categoria "periferia": favela e comunidade urbana e urbana de baixa densidade são o mais próximo disso. A classificação é do lugar onde se vota, que costuma ficar perto, mas não necessariamente no mesmo setor, de onde o eleitor mora. Malha municipal do IBGE (via geodata-br), simplificada para a web; códigos TSE→IBGE pela tabela de correspondência betafcc/Municipios-Brasileiros-TSE. Abstenção = abstenções ÷ eleitores aptos. Votos no Lula: TSE, votação por candidato, município e zona 2026 (Lula, 13), sobre os votos válidos para presidente na mesma zona. "Lula venceu" = Lula foi o candidato mais votado no 1º turno naquele município (no mapa) ou zona (nas tabelas); os pontos dos locais de votação não têm votação por candidato e seguem mostrando abstenção ou tipo de área. As zonas não têm polígono próprio, então o mapa colore o município e o painel mostra a parte de cada zona dentro dele. Sete municípios criados após a malha usada (Mojuí dos Campos, Nazária, Pescaria Brava, Balneário Rincão, Pinto Bandeira, Paraíso das Águas e Boa Esperança do Norte, cerca de 69 mil aptos) entram nos totais mas não aparecem no mapa.`;
 </script>
 
 </body>

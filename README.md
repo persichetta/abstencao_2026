@@ -2,7 +2,7 @@
 
 mapa interativo da abstenção e dos votos no lula no 1º turno de 4/10/2026, com estas camadas:
 
-- **sobreposição** (visão padrão): três camadas no mesmo lugar. a cor cruza abstenção e voto no lula (3×3, faixas pelos tercis dos municípios: abstenção <19%, 19–22%, ≥22%; lula <36%, 36–60%, ≥60%). a terceira camada é a distância entre as áreas habitadas e as seções: para cada setor censitário do censo 2022, a distância em linha reta até o local de votação mais próximo do mesmo município. no brasil, hachura nos municípios com 20–40% ou 40%+ dos setores a 5 km ou mais da seção; nos estados, pontos cinza para setores a 2 km ou mais e tamanho do local de votação pela distância média da região que ele atende;
+- **sobreposição** (visão padrão): três camadas no mesmo lugar. a cor cruza abstenção e voto no lula (3×3, faixas pelos tercis dos municípios: abstenção <19%, 19–22%, ≥22%; lula <36%, 36–60%, ≥60%). a terceira camada diz se a região fica **longe** ou **perto** das seções eleitorais: uma área habitada (setor censitário do censo 2022) é longe quando fica a 5 km ou mais, em linha reta, do local de votação mais próximo do mesmo município (mais de 1 hora a pé); um município ou zona é longe quando 20% ou mais das suas áreas habitadas são longe; um local de votação é longe quando quem mora em volta está, em média, a 5 km ou mais dele. no brasil, regiões longe aparecem hachuradas; nos estados, pontinhos escuros marcam áreas longe e locais que atendem regiões longe aparecem maiores;
 
 - **município**: choropleth do brasil inteiro, alternando entre abstenção e % dos votos válidos no lula;
 - **zona eleitoral**: abstenção e votos no lula de cada zona nos painéis;
