@@ -103,7 +103,8 @@ details select{font:inherit;padding:8px;border-radius:8px;border:1px solid var(-
   </div>
 
   <div class="chips" role="group" aria-label="Filtros">
-    <span class="lbl">Mostrar só onde:</span>
+    <span class="lbl">Mostrar só:</span>
+    <button type="button" class="chip" id="f-longe" aria-pressed="false">Regiões longe da urna</button>
     <button type="button" class="chip" id="f-lula" aria-pressed="false">Lula forte (60%+)</button>
     <button type="button" class="chip" id="f-abst" aria-pressed="false">Muita abstenção (22%+)</button>
   </div>
@@ -157,9 +158,9 @@ const farN=m=>m.sd[2]+m.sd[3];
 const farS=m=>farN(m)/tot(m);
 const longe=m=>farS(m)>=.2;
 const lula=m=>m.v?m.l/m.v:0, abst=m=>m.b/m.a;
-const F={lula:false,abst:false};
+const F={longe:false,lula:false,abst:false};
 let COLOR="dist", UF="", SEL=null, SHOWN=15;
-const pass=m=>(!F.lula||lula(m)>=.6)&&(!F.abst||abst(m)>=.22);
+const pass=m=>(!F.longe||longe(m))&&(!F.lula||lula(m)>=.6)&&(!F.abst||abst(m)>=.22);
 const SCALES={
   dist:{v:farS,b:[.1,.2,.4],lab:["menos de 10%","10% a 20%","20% a 40%","40% ou mais"],t:"Áreas habitadas longe da seção"},
   lula:{v:lula,b:[.36,.6,.75],lab:["menos de 36%","36% a 60%","60% a 75%","75% ou mais"],t:"Voto no Lula (% válidos)"},
@@ -201,7 +202,7 @@ function zoomPt(xy,k=18){svg.transition().duration(600).call(zoom.transform,d3.z
 // legenda
 const leg=document.getElementById("legend");
 function legend(){const s=SCALES[COLOR];
-  leg.innerHTML=`<span>${s.t}:</span>${s.lab.map((l,i)=>`<span><i class="sw" style="background:var(--d${i})"></i>${l}</span>`).join("")}${F.lula||F.abst?`<span><i class="sw" style="background:var(--off);border:1px solid var(--line)"></i>fora do filtro</span>`:""}${LOADED?`<span><i class="dot" style="background:var(--far)"></i>área habitada a 5 km+ da seção</span><span><i class="dot" style="background:var(--loc)"></i>local de votação (anel = atende região longe)</span>`:""}`}
+  leg.innerHTML=`<span>${s.t}:</span>${s.lab.map((l,i)=>`<span><i class="sw" style="background:var(--d${i})"></i>${l}</span>`).join("")}${F.longe||F.lula||F.abst?`<span><i class="sw" style="background:var(--off);border:1px solid var(--line)"></i>fora do filtro</span>`:""}${LOADED?`<span><i class="dot" style="background:var(--far)"></i>área habitada a 5 km+ da seção</span><span><i class="dot" style="background:var(--loc)"></i>local de votação (anel = atende região longe)</span>`:""}`}
 
 // dados por estado
 const cache={};let LOADED=null,LV=[];
@@ -219,6 +220,7 @@ async function loadUF(uf){
   gp.selectAll("circle").data(LV.filter(d=>d.xy).sort((a,b)=>a.lg-b.lg)).join("circle").attr("class",d=>"lv"+(d.lg?" lg":"")).attr("cx",d=>d.xy[0]).attr("cy",d=>d.xy[1]).attr("r",rLoc)
     .on("mousemove",(e,d)=>showTip(e,`<b>${d.nome}</b><br>${d.mun} · zona ${d.z}<br>${d.lg?`<b style="color:var(--accent)">Atende região longe</b>`:"Atende região perto"}${d.cm?` · em média ${km(d.cm[1])}`:""}`))
     .on("mouseleave",()=>tip.hidden=true).on("click",(e,d)=>{e.stopPropagation();pickLocal(d)});
+  showLocs();
   status.textContent=`${uf}: pontos vermelhos = áreas a 5 km+ da seção`;
   legend();
   if(SEL&&SEL.type==="mun")renderCard();
@@ -254,7 +256,7 @@ function renderCard(){
 const list=document.getElementById("list"), more=document.getElementById("more");
 function renderList(){
   const arr=Object.entries(M).filter(([,m])=>(!UF||m.uf===UF)&&pass(m)&&longe(m)).sort((a,b)=>farN(b[1])-farN(a[1]));
-  document.getElementById("listscope").textContent=(UF||"Brasil")+(F.lula||F.abst?" · com filtro":"");
+  document.getElementById("listscope").textContent=(UF||"Brasil")+(F.longe||F.lula||F.abst?" · com filtro":"");
   list.innerHTML=arr.length?arr.slice(0,SHOWN).map(([id,m])=>`<button type="button" class="row" data-m="${id}"><span class="nm">${m.n} <span style="font-weight:400;color:var(--muted)">· ${m.uf}</span></span><span class="sub">Lula ${pct(lula(m))} · abstenção ${pct(abst(m))}</span><span class="pc">${pct(farS(m))}<small>das áreas longe</small></span></button>`).join(""):`<div class="empty">Nenhuma região longe com esse filtro.</div>`;
   more.hidden=arr.length<=SHOWN;
   list.querySelectorAll("[data-m]").forEach(b=>b.onclick=()=>{pickMun(b.dataset.m,true);document.querySelector(".mapbox").scrollIntoView({behavior:"smooth",block:"start"})});
@@ -284,7 +286,8 @@ document.getElementById("muns").innerHTML=Object.entries(M).sort((a,b)=>a[1].n.l
 document.getElementById("q").addEventListener("change",e=>{const id=byLabel[e.target.value];if(id){pickMun(id,true);e.target.blur()}});
 
 // filtros e cor
-for(const k of ["lula","abst"]){const b=document.getElementById("f-"+k);b.onclick=()=>{F[k]=!F[k];b.setAttribute("aria-pressed",F[k]);paint();legend();renderList();renderCard()}}
+for(const k of ["longe","lula","abst"]){const b=document.getElementById("f-"+k);b.onclick=()=>{F[k]=!F[k];b.setAttribute("aria-pressed",F[k]);paint();legend();renderList();renderCard();showLocs()}}
+function showLocs(){gp.selectAll("circle").attr("display",d=>F.longe&&!d.lg?"none":null)}
 document.getElementById("colorby").onchange=e=>{COLOR=e.target.value;paint();legend()};
 
 document.getElementById("src").innerHTML=`Fontes: TSE (<a href="https://dadosabertos.tse.jus.br/" target="_blank" rel="noopener">dados abertos</a>: votação por seção, detalhe por município e zona, eleitorado por local de votação, 2026) e IBGE (malha de setores censitários do Censo 2022). Arquivo do TSE gerado em ${meta.gen}.`;

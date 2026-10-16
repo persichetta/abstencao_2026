@@ -2,7 +2,7 @@
 
 mapa das regiões onde muita gente mora a mais de 1 hora a pé (5 km ou mais, em linha reta) da seção eleitoral mais próxima, com filtros de voto no lula e abstenção no 1º turno de 2026.
 
-- **tela inicial**: busca por cidade, filtros "lula forte (60%+)" e "muita abstenção (22%+)", mapa dos municípios pela parcela de áreas habitadas longe da seção, e a lista de onde mais gente mora longe da urna;
+- **tela inicial**: busca por cidade, filtros "regiões longe da urna", "lula forte (60%+)" e "muita abstenção (22%+)", mapa dos municípios pela parcela de áreas habitadas longe da seção, e a lista de onde mais gente mora longe da urna;
 - **município**: diz se é região longe ou perto das seções, com voto no lula, abstenção e os locais de votação que atendem regiões longe;
 - **estado**: pontos vermelhos marcam as áreas habitadas a 5 km ou mais da seção; locais de votação com anel atendem regiões longe;
 - **local de votação**: distância média de quem mora na região, voto no lula, abstenção e seções;
